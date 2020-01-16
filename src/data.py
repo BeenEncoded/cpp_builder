@@ -1,4 +1,4 @@
-import configparser
+import configparser, dataclasses
 
 class Configuration:
     '''
@@ -37,3 +37,11 @@ class Configuration:
         logger.info("Saving configuration")
         with open("backup.conf", 'w') as config_file:
             self.config.write(config_file)
+
+@dataclasses.dataclass
+class ProjectInformation:
+    cpp_compiler: str
+    c_compiler: str
+    project_directory: str
+    generator_type: str
+    

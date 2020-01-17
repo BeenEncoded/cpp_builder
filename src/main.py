@@ -1,11 +1,11 @@
-import sys, os, logging
+import sys, logging
 from PyQt5.QtWidgets import QApplication
 
 from UI.mainwindow import MainWindow
 
 def showiu():
     app = QApplication(sys.argv)
-    mainwindow = MainWindow()
+    mainwindow = MainWindow() # noqa: F841
     logging.getLogger("main").info("Program starting")
     return app.exec()
 

@@ -1,4 +1,6 @@
-import configparser, dataclasses
+import configparser, dataclasses, logging, os
+
+logger = logging.getLogger("data")
 
 class Configuration:
     '''

@@ -1,4 +1,4 @@
-import configparser, dataclasses, logging, os
+import configparser, dataclasses, logging, os, typing
 
 logger = logging.getLogger("data")
 
@@ -43,16 +43,16 @@ class Configuration:
 @dataclasses.dataclass
 class ProjectInformation:
     #general settings:
-    project_directory: str
+    project_directory: str = os.getcwd()
 
     #cmake arguments and specifiers
-    cpp_compiler: str
-    c_compiler: str
-    generator_type: str
+    cpp_compiler: str = ""
+    c_compiler: str = ""
+    generator_type: str = ""
     
-    #nmake arguments and specifiers:
-    build_targets: list
-    nmake_arguments: list
+    # nmake arguments and specifiers
+    build_targets: typing.List[str] = dataclasses.field(default_factory=list)
+    nmake_arguments: typing.List[str] = dataclasses.field(default_factory=list)
 
     def isvalid(self) -> bool:
         '''

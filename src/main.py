@@ -1,13 +1,4 @@
-import sys, logging
-from PyQt5.QtWidgets import QApplication
-
-from UI.mainwindow import MainWindow
-
-def showiu():
-    app = QApplication(sys.argv)
-    mainwindow = MainWindow() # noqa: F841
-    logging.getLogger("main").info("Program starting")
-    return app.exec()
+import logging, sys
 
 def setup_logging():
     root = logging.getLogger()
@@ -29,6 +20,18 @@ def setup_logging():
     # root.addHandler(fh)
     root.setLevel(logging.DEBUG)
 
+setup_logging()
+logger = logging.getLogger(__name__)
+
+from PyQt5.QtWidgets import QApplication
+
+from UI.mainwindow import MainWindow
+
+def showiu():
+    app = QApplication(sys.argv)
+    mainwindow = MainWindow() # noqa: F841
+    logger.info("Program starting")
+    return app.exec()
+
 if __name__ == "__main__":
-    setup_logging()
     showiu()

@@ -10,7 +10,6 @@ class Configuration:
 
     def __init__(self):
         logger.debug("Configuration instantiated.")
-        super(Configuration, self).__init__()
 
         # set up the configuration, initializing it with some sane defaults
         self.config = self._default_config()

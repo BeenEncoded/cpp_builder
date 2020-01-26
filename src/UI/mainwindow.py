@@ -1,9 +1,9 @@
-import logging
+import logging, io
 
 from PyQt5.QtWidgets import QMainWindow
 from UI.widgets import MainBuildMenu
 
-logger = logging.getLogger("mainwindow")
+logger = logging.getLogger(__name__)
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):

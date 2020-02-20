@@ -1,12 +1,12 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout
 from PyQt5.QtWidgets import QPushButton, QLabel, QPlainTextEdit
-from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QObject
 
-from quithread import ThreadData, WindowUpdateThread
+from quithread import WindowUpdateThread
 
-import logging, threading, io
+import logging, threading, io, sys
 
-logger = logging.getLogger("widgets")
+logger = logging.getLogger(__name__)
 
 class MainBuildMenu(QWidget):
     def __init__(self, parent):
@@ -27,7 +27,47 @@ class MainBuildMenu(QWidget):
     def _connect_handlers(self):
         pass
 
-class UIStream(QtCore.QObject):
+class OutputWindow(QWidget):
+    def __init__(self, parent=None):
+        super(OutputWindow, self).__init__(None)
+        self._init_layout()
+        logger.debug("Created output window")
+        self.doclose = False #this allows for hiding and showing while disabling closing
+    
+    def _init_layout(self):
+        self.outputpane = STDOutWidget(self)
+
+    def closeEvent(self, event) -> None:
+        logger.debug(OutputWindow.closeEvent.__qualname__ + ": triggered")
+        if not self.doclose:
+            if self.isVisible():
+                self.hide()
+                logger.debug("Hiding output window")
+        else:
+            if not self.close():
+                logger.debug("failed to close window")
+                raise RuntimeError("Unable to close " + OutputWindow.__qualname__)
+
+class STDOutWidget(QWidget):
+    def __init__(self, parent):
+        super(STDOutWidget, self).__init__(parent)
+        self._init_layout()
+        self._connect_handlers()
+    
+    def _init_layout(self):
+        mainlayout = QVBoxLayout()
+        self.output_box = QPlainTextEdit()
+        mainlayout.addWidget(self.output_box)
+    
+    def _connect_handlers(self):
+        UIStream.stdout().messageWritten.connect(self.write_message)
+        UIStream.stderr().messageWritten.connect(self.write_message)
+    
+    @pyqtSlot(str)
+    def write_message(self, message: str="") -> None:
+        self.output_box.appendPlainText(message)
+
+class UIStream(QObject):
     '''
     Can be used to redirect stdout and stderr from the console to 
     a UI element.
@@ -37,26 +77,26 @@ class UIStream(QtCore.QObject):
     _stderr = None
     messageWritten = pyqtSignal(str)
 
-    def flush( self ):
+    def flush(self):
         pass
     
-    def fileno( self ):
+    def fileno(self):
         return -1
     
-    def write( self, msg ):
-        if ( not self.signalsBlocked() ):
-            self.messageWritten.emit(unicode(msg))
+    def write(self, msg):
+        if(not self.signalsBlocked()):
+            self.messageWritten.emit(msg)
 
     @staticmethod
     def stdout():
-        if ( not XStream._stdout ):
-            XStream._stdout = XStream()
-            sys.stdout = XStream._stdout
-        return XStream._stdout
+        if(not UIStream._stdout):
+            UIStream._stdout = UIStream()
+            sys.stdout = UIStream._stdout
+        return UIStream._stdout
 
     @staticmethod
     def stderr():
-        if ( not XStream._stderr ):
-            XStream._stderr = XStream()
-            sys.stderr = XStream._stderr
-        return XStream._stderr
+        if(not UIStream._stderr):
+            UIStream._stderr = UIStream()
+            sys.stderr = UIStream._stderr
+        return UIStream._stderr

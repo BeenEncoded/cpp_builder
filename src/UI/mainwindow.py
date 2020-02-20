@@ -1,7 +1,8 @@
 import logging, io
 
 from PyQt5.QtWidgets import QMainWindow
-from UI.widgets import MainBuildMenu
+from PyQt5.Qt import *
+from UI.widgets import MainBuildMenu, OutputWindow
 
 logger = logging.getLogger(__name__)
 
@@ -11,5 +12,26 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("C++ Build Assistant")
 
         logger.info("setting central widget")
+
+        self.owind = OutputWindow(parent=None)
+        self.toggle_output_shortcut = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_L), self)
+        self.toggle_output_shortcut.activated.connect(self.toggleoutput)
+
         self.setCentralWidget(MainBuildMenu(self))
         self.show()
+    
+    def closeEvent(self, event) -> None:
+        logger.debug(MainWindow.closeEvent.__qualname__ + ": Triggered")
+        self.owind.doclose = True
+        self.owind.close()
+    
+    @pyqtSlot()
+    def toggleoutput(self) -> None:
+        logger.debug(self.toggleoutput.__qualname__ + ": tiggered")
+        if not self.owind.isVisible():
+            print("qwdkjwkjnwdqknqwdlnqwdlknqwdlk\n\nthis is test text\n\nI hope this works!!")
+            logger.debug("Showing output window")
+            self.owind.showMaximized()
+        else:
+            logger.debug("Hiding output window")
+            self.owind.hide()

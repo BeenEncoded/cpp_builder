@@ -1,6 +1,6 @@
 import configparser, dataclasses, logging, os, typing
 
-logger = logging.getLogger("data")
+logger = logging.getLogger(__name__)
 
 class Configuration:
     '''

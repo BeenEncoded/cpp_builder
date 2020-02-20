@@ -2,7 +2,7 @@ import threading, time, logging
 from PyQt5.QtCore import pyqtSignal, QObject
 from dataclasses import dataclass
 
-logger = logging.getLogger("quithread")
+logger = logging.getLogger(__name__)
 
 class WindowUpdateThread(QObject, threading.Thread):
     '''

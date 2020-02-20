@@ -2,7 +2,8 @@ import logging, io
 
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.Qt import *
-from UI.widgets import MainBuildMenu, OutputWindow
+from UI.widgets import MainBuildMenu
+from UI.stdredirect import OutputWindow
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ class MainWindow(QMainWindow):
         if not self.owind.isVisible():
             print("qwdkjwkjnwdqknqwdlnqwdlknqwdlk\n\nthis is test text\n\nI hope this works!!")
             logger.debug("Showing output window")
-            self.owind.showMaximized()
+            self.owind.show()
         else:
             logger.debug("Hiding output window")
             self.owind.hide()

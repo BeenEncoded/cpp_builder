@@ -1,6 +1,6 @@
 import logging, sys
 
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QPlainTextEdit, QWidget
+from PyQt5.QtWidgets import QVBoxLayout, QPlainTextEdit, QWidget
 from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot
 
 logger = logging.getLogger(__name__)

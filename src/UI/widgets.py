@@ -1,10 +1,8 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout
-from PyQt5.QtWidgets import QPushButton, QLabel, QPlainTextEdit
-from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QObject
+from PyQt5.QtWidgets import QWidget, QVBoxLayout
+from PyQt5.QtWidgets import QLabel
+from PyQt5.QtCore import Qt
 
-from quithread import WindowUpdateThread
-
-import logging, threading, io, sys
+import logging
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,7 @@
-import logging, io
+import logging
 
 from PyQt5.QtWidgets import QMainWindow
-from PyQt5.Qt import *
+from PyQt5.Qt import * # noqa: F403
 from UI.widgets import MainBuildMenu
 from UI.stdredirect import OutputWindow
 
@@ -15,7 +15,7 @@ class MainWindow(QMainWindow):
         logger.info("setting central widget")
 
         self.owind = OutputWindow(parent=None)
-        self.toggle_output_shortcut = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_L), self)
+        self.toggle_output_shortcut = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_L), self) # noqa: F405
         self.toggle_output_shortcut.activated.connect(self.toggleoutput)
 
         self.setCentralWidget(MainBuildMenu(self))
@@ -26,7 +26,7 @@ class MainWindow(QMainWindow):
         self.owind.doclose = True
         self.owind.close()
     
-    @pyqtSlot()
+    @pyqtSlot() # noqa: F405
     def toggleoutput(self) -> None:
         logger.debug(self.toggleoutput.__qualname__ + ": tiggered")
         if not self.owind.isVisible():

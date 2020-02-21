@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
-from PyQt5.QtWidgets import QLabel
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QLabel, QPushButton
+from PyQt5.QtCore import Qt, pyqtSlot
 
 import logging
 
@@ -19,8 +19,16 @@ class MainBuildMenu(QWidget):
         self.l = QLabel("Hello World")
         self.l.setAlignment(Qt.AlignCenter)
 
+        self.testbutton = QPushButton("Test Button")
+
+        mainlayout.addWidget(self.testbutton)
         mainlayout.addWidget(self.l)
         self.setLayout(mainlayout)
     
     def _connect_handlers(self):
-        pass
+        self.testbutton.clicked.connect(self.printtest)
+
+    @pyqtSlot()
+    def printtest(self) -> None:
+        logger.debug("Test log message")
+        print("Print test message")

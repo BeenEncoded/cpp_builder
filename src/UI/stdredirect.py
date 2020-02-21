@@ -1,4 +1,4 @@
-import logging, sys
+import logging, sys, re
 
 from PyQt5.QtWidgets import QVBoxLayout, QPlainTextEdit, QWidget
 from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot
@@ -31,6 +31,10 @@ class OutputWindow(QWidget):
                 raise RuntimeError("Unable to close " + OutputWindow.__qualname__)
 
 class STDOutWidget(QWidget):
+    '''
+    Basically a QPlainTextEdit but it shows the stdout.
+    '''
+
     def __init__(self, parent):
         super(STDOutWidget, self).__init__(parent)
         self._init_layout()
@@ -56,10 +60,13 @@ class UIStream(QObject):
     Can be used to redirect stdout and stderr from the console to 
     a UI element.
     '''
-
     _stdout = None
     _stderr = None
     messageWritten = pyqtSignal(str)
+
+    def __init__(self, original_stream=None):
+        super(UIStream, self).__init__(None)
+        self.original = original_stream
 
     def flush(self):
         pass
@@ -69,18 +76,46 @@ class UIStream(QObject):
     
     def write(self, msg):
         if(not self.signalsBlocked()):
-            self.messageWritten.emit(msg)
+            self.messageWritten.emit(self.uiformatted(msg))
+            self.original.write(msg)
+
+    def uiformatted(self, message: str="") -> str:
+        '''
+        Some messages look goofy (added newlines, whatever).
+        We have to try to grab them and make them not fucked up.
+        '''
+        if self.islogmessage(message):
+            chars = ["\n", "\r"]
+            for c in chars:
+                message = message.replace(c, "")
+        return message
+
+    def islogmessage(self, message="") -> bool:
+        '''
+        Matches a log message specific to my personal formatting.
+        If you don't use my formatting, you're wrong.  :D
+
+        But in all seriousness, log messages were getting an extra newline appended in the UI, so
+        it became necessary to intercept and strip those newlines.  This is 
+        the resulting solution.
+        '''
+        if not hasattr(self, "logregex"):
+            self.logregex = re.compile(r"(\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2},\d{1,3} \[[A-Za-z0-9_\.]+\] \[[A-Za-z]+\] \->)")
+        return (self.logregex.match(message) is not None)
 
     @staticmethod
     def stdout():
         if(not UIStream._stdout):
-            UIStream._stdout = UIStream()
+            UIStream._stdout = UIStream(original_stream=sys.stdout)
             sys.stdout = UIStream._stdout
+            logger.debug("stdout redirected!")
         return UIStream._stdout
 
     @staticmethod
     def stderr():
         if(not UIStream._stderr):
-            UIStream._stderr = UIStream()
+            UIStream._stderr = UIStream(original_stream=sys.stderr)
+            UIStream._origstderr = sys.stderr
             sys.stderr = UIStream._stderr
+            logger.debug("stderr redirected!")
         return UIStream._stderr

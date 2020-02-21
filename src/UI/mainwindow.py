@@ -30,7 +30,6 @@ class MainWindow(QMainWindow):
     def toggleoutput(self) -> None:
         logger.debug(self.toggleoutput.__qualname__ + ": tiggered")
         if not self.owind.isVisible():
-            print("qwdkjwkjnwdqknqwdlnqwdlknqwdlk\n\nthis is test text\n\nI hope this works!!")
             logger.debug("Showing output window")
             self.owind.show()
         else:

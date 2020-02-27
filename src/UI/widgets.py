@@ -4,6 +4,8 @@ from PyQt5.QtCore import Qt, pyqtSlot
 
 import logging
 
+from UI.stdredirect import STDOutWidget
+
 logger = logging.getLogger(__name__)
 
 class MainBuildMenu(QWidget):
@@ -20,6 +22,7 @@ class MainBuildMenu(QWidget):
         self.l.setAlignment(Qt.AlignCenter)
 
         mainlayout.addWidget(self.l)
+        mainlayout.addWidget(STDOutWidget(self))
         self.setLayout(mainlayout)
     
     def _connect_handlers(self):

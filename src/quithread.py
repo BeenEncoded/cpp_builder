@@ -37,11 +37,11 @@ class WindowUpdateThread(QObject, threading.Thread):
         self.started.emit(self.threaddata)
         while not self.abort and not self.finished:
             time.sleep(1 / 60)
-            if self.action():
+            if self.doAction():
                 self.update.emit(self.windowdata)
         self.finished.emit(self.windowdata)
 
-    def action(self) -> bool:
+    def doAction(self) -> bool:
         '''
         When you inherit from this object, implement this function.  This
         is the thread.
@@ -51,7 +51,7 @@ class WindowUpdateThread(QObject, threading.Thread):
 
         Return true to update the UI with whatever info you need.
         '''
-        raise NotImplementedError(WindowUpdateThread.action.__qualname__ + ": Not implemented!")
+        raise NotImplementedError(WindowUpdateThread.doAction.__qualname__ + ": Not implemented!")
 
     def locals(self) -> None:
         raise NotImplementedError(WindowUpdateThread.locals.__qualname__ + ": Not implemented!")

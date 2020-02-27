@@ -14,18 +14,25 @@ class MainWindow(QMainWindow):
 
         logger.info("setting central widget")
 
-        self.owind = OutputWindow(parent=None)
-        self.toggle_output_shortcut = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_L), self) # noqa: F405
-        self.toggle_output_shortcut.activated.connect(self.toggleoutput)
-
+        #an aditional output window can be enabled by simply uncommenting the following line:
+        #self._init_outputwindow()
         self.setCentralWidget(MainBuildMenu(self))
         self.show()
     
     def closeEvent(self, event) -> None:
         logger.debug(MainWindow.closeEvent.__qualname__ + ": Triggered")
-        self.owind.doclose = True
-        self.owind.close()
+        self._close_outputwindow()
     
+    def _init_outputwindow(self) -> None:
+        self.owind = OutputWindow(parent=None)
+        self.toggle_output_shortcut = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_L), self) # noqa: F405
+        self.toggle_output_shortcut.activated.connect(self.toggleoutput)
+    
+    def _close_outputwindow(self) -> None:
+        if hasattr(self, "owind"):
+            self.owind.doclose = True
+            self.owind.close()
+
     @pyqtSlot() # noqa: F405
     def toggleoutput(self) -> None:
         logger.debug(self.toggleoutput.__qualname__ + ": tiggered")

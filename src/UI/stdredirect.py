@@ -26,6 +26,7 @@ class OutputWindow(QWidget):
                 self.hide()
                 logger.debug("Hiding output window")
         else:
+            UIStream.reset_streams()
             if not self.close():
                 logger.debug("failed to close window")
                 raise RuntimeError("Unable to close " + OutputWindow.__qualname__)
@@ -71,9 +72,10 @@ class UIStream(QObject):
     _stderr = None
     messageWritten = pyqtSignal(str)
 
-    def __init__(self, original_stream=None):
+    def __init__(self, original_stream=None, set_back=None):
         super(UIStream, self).__init__(None)
         self.original = original_stream
+        self._set_back = set_back
 
     def flush(self):
         pass
@@ -114,9 +116,17 @@ class UIStream(QObject):
         return (self.logregex.match(message) is not None)
 
     @staticmethod
+    def _setbackstdout(ob):
+        sys.stdout = ob.original
+
+    @staticmethod
+    def _setbackstderr(ob):
+        sys.stderr = ob.original
+
+    @staticmethod
     def stdout():
         if(not UIStream._stdout):
-            UIStream._stdout = UIStream(original_stream=sys.stdout)
+            UIStream._stdout = UIStream(original_stream=sys.stdout, set_back=UIStream._setbackstdout)
             sys.stdout = UIStream._stdout
             logger.debug("stdout redirected!")
         return UIStream._stdout
@@ -124,8 +134,13 @@ class UIStream(QObject):
     @staticmethod
     def stderr():
         if(not UIStream._stderr):
-            UIStream._stderr = UIStream(original_stream=sys.stderr)
+            UIStream._stderr = UIStream(original_stream=sys.stderr, set_back=UIStream._setbackstderr)
             UIStream._origstderr = sys.stderr
             sys.stderr = UIStream._stderr
             logger.debug("stderr redirected!")
         return UIStream._stderr
+    
+    @staticmethod
+    def reset_streams():
+        UIStream.stdout()._set_back(UIStream.stdout())
+        UIStream.stderr()._set_back(UIStream.stderr())

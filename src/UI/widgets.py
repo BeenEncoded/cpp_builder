@@ -19,16 +19,14 @@ class MainBuildMenu(QWidget):
         self.l = QLabel("Hello World")
         self.l.setAlignment(Qt.AlignCenter)
 
-        self.testbutton = QPushButton("Test Button")
-
-        mainlayout.addWidget(self.testbutton)
         mainlayout.addWidget(self.l)
         self.setLayout(mainlayout)
     
     def _connect_handlers(self):
-        self.testbutton.clicked.connect(self.printtest)
+        pass
 
     @pyqtSlot()
     def printtest(self) -> None:
         logger.debug("Test log message")
-        print("Print test message")
+        print("Print test message\nmultiline test")
+        print("a seperate print line")

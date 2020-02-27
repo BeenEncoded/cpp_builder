@@ -43,6 +43,13 @@ class STDOutWidget(QWidget):
     def _init_layout(self):
         mainlayout = QVBoxLayout()
         self.output_box = QPlainTextEdit()
+
+        #set up the output box configuration
+        self.output_box.setReadOnly(True)
+        self.output_box.setBackgroundVisible(False)
+        self.output_box.setStyleSheet(r"QPlainTextEdit {color: white; " + 
+            r"background-color: black; font-family: consolas, monospace; font-size: 11pt;}")
+
         mainlayout.addWidget(self.output_box)
 
         self.setLayout(mainlayout)

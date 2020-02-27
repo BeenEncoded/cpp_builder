@@ -27,7 +27,7 @@ class MainBuildMenu(QWidget):
         self.l.setAlignment(Qt.AlignCenter)
 
         mainlayout.addWidget(self.l)
-        mainlayout.addWidget(STDOutWidget(None))
+        mainlayout.addWidget(STDOutWidget(self))
         self.setLayout(mainlayout)
     
     def _connect_handlers(self):

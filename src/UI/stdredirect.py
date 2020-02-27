@@ -76,7 +76,8 @@ class UIStream(QObject):
     
     def write(self, msg):
         if(not self.signalsBlocked()):
-            self.messageWritten.emit(self.uiformatted(msg))
+            if msg != "\n":
+                self.messageWritten.emit(self.uiformatted(msg))
             self.original.write(msg)
 
     def uiformatted(self, message: str="") -> str:
@@ -84,10 +85,16 @@ class UIStream(QObject):
         Some messages look goofy (added newlines, whatever).
         We have to try to grab them and make them not fucked up.
         '''
+        chars = [
+            ("\n", "\\n"), 
+            ("\r", "\\r")]
         if self.islogmessage(message):
-            chars = ["\n", "\r"]
             for c in chars:
-                message = message.replace(c, "")
+                message = message.replace(c[0], "")
+        
+        #now we will replace all the newlines and returns with actual newlines and returns
+        for c in chars:
+            message = message.replace(c[0], c[1])
         return message
 
     def islogmessage(self, message="") -> bool:

@@ -26,7 +26,6 @@ class OutputWindow(QWidget):
                 self.hide()
                 logger.debug("Hiding output window")
         else:
-            UIStream.reset_streams()
             if not self.close():
                 logger.debug("failed to close window")
                 raise RuntimeError("Unable to close " + OutputWindow.__qualname__)
@@ -41,6 +40,9 @@ class STDOutWidget(QWidget):
         self._init_layout()
         self._connect_handlers()
     
+    def __del__(self):
+        UIStream.reset_streams()
+
     def _init_layout(self):
         mainlayout = QVBoxLayout()
         self.output_box = QPlainTextEdit()
@@ -68,6 +70,7 @@ class UIStream(QObject):
     Can be used to redirect stdout and stderr from the console to 
     a UI element.
     '''
+    _streamsdifferent = False
     _stdout = None
     _stderr = None
     messageWritten = pyqtSignal(str)
@@ -128,6 +131,7 @@ class UIStream(QObject):
         if(not UIStream._stdout):
             UIStream._stdout = UIStream(original_stream=sys.stdout, set_back=UIStream._setbackstdout)
             sys.stdout = UIStream._stdout
+            UIStream._streamsdifferent = True
             logger.debug("stdout redirected!")
         return UIStream._stdout
 
@@ -135,12 +139,19 @@ class UIStream(QObject):
     def stderr():
         if(not UIStream._stderr):
             UIStream._stderr = UIStream(original_stream=sys.stderr, set_back=UIStream._setbackstderr)
-            UIStream._origstderr = sys.stderr
             sys.stderr = UIStream._stderr
+            UIStream._streamsdifferent = True
             logger.debug("stderr redirected!")
         return UIStream._stderr
     
     @staticmethod
     def reset_streams():
-        UIStream.stdout()._set_back(UIStream.stdout())
-        UIStream.stderr()._set_back(UIStream.stderr())
+        '''
+        Resets the streams to their original values.  This can be used
+        to preserve stdout and stderr when the ui is destroyed.
+        '''
+        if UIStream._streamsdifferent:
+            UIStream.stdout()._set_back(UIStream.stdout())
+            UIStream.stderr()._set_back(UIStream.stderr())
+            UIStream._streamsdifferent = False
+            print("streams reset")

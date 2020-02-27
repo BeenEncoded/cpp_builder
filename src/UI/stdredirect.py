@@ -33,15 +33,22 @@ class OutputWindow(QWidget):
 class STDOutWidget(QWidget):
     '''
     Basically a QPlainTextEdit but it shows the stdout.
+
+    When the last one is deleted the stdout and stderr streams are reset to the
+    original objects.
     '''
+    _instance_count = 0
 
     def __init__(self, parent):
         super(STDOutWidget, self).__init__(parent)
         self._init_layout()
         self._connect_handlers()
+        STDOutWidget._instance_count += 1
     
     def __del__(self):
-        UIStream.reset_streams()
+        STDOutWidget._instance_count -= 1
+        if STDOutWidget._instance_count == 0:
+            UIStream.reset_streams()
 
     def _init_layout(self):
         mainlayout = QVBoxLayout()

@@ -91,10 +91,6 @@ class UIStream(QObject):
         if self.islogmessage(message):
             for c in chars:
                 message = message.replace(c[0], "")
-        
-        #now we will replace all the newlines and returns with actual newlines and returns
-        for c in chars:
-            message = message.replace(c[0], c[1])
         return message
 
     def islogmessage(self, message="") -> bool:

@@ -89,10 +89,10 @@ class ProjectInformation:
     All data a CMake project needs.  Essentially these variables
     will be passed as arguments if set.
     '''
-
-    #general settings:
+    #project-specific settings:
     project_directory: str = os.getcwd()
-    source_directory: str = os.getcwd()
+    source_directory: str = (os.getcwd() + os.path.sep + "src")
+    build_directory: str = (os.getcwd() + os.path.sep + "build")
 
     #cmake arguments and specifiers
     generator_type: str = CMAKE_GENERATOR_TYPES[14] #default to NMake
@@ -122,7 +122,7 @@ class ProjectInformation:
     '''
     cmake_include_path: typing.List[str] = dataclasses.field(default_factory=list)
     
-    # nmake arguments and specifiers
+    # nmake arguments and target specifiers
     build_targets: typing.List[str] = dataclasses.field(default_factory=list)
     make_arguments: typing.List[str] = dataclasses.field(default_factory=list)
 

@@ -5,7 +5,7 @@ included in a release build of this software.
 '''
 import unittest, logging, sys
 
-from unit_tests.datatests import ProjectInformationTestCase
+from unit_tests.datatests import ProjectInformationTestCase # noqa: F401
 
 def setup_logging():
     root = logging.getLogger()

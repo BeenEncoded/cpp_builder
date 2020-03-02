@@ -38,7 +38,7 @@ class Worker(threading.Thread):
         try:
             logger.debug(message)
             return True
-        except:
+        except: # noqa: E722
             return False
 
     def run(self):

@@ -1,11 +1,9 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
-from PyQt5.QtWidgets import QLabel, QPushButton
-from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtCore import pyqtSlot
 
-import logging, threads
+import logging
 
 from UI.stdredirect import STDOutWidget
-from data import ProjectInformation, CMAKE_GENERATOR_TYPES
 
 logger = logging.getLogger(__name__)
 

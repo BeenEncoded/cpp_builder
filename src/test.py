@@ -28,7 +28,7 @@ def setup_logging():
     root.setLevel(logging.DEBUG)
 
 setup_logging()
-logger = logging.getLogger("test.main")
+logger = logging.getLogger("TEST: test.main")
 
 if __name__ == "__main__":
     unittest.main()

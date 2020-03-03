@@ -1,4 +1,4 @@
-import configparser, dataclasses, logging, os, typing
+import configparser, dataclasses, logging, os, typing, subprocess, shutil
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +93,7 @@ class ProjectInformation:
     project_directory: str = os.getcwd()
     source_directory: str = (os.getcwd() + os.path.sep + "src")
     build_directory: str = (os.getcwd() + os.path.sep + "build")
+    dist_directory: str = (os.getcwd() + os.path.sep + "dist")
 
     #cmake arguments and specifiers
     generator_type: str = CMAKE_GENERATOR_TYPES[14] #default to NMake
@@ -101,6 +102,7 @@ class ProjectInformation:
     cpp_compiler: str = ""
     c_compiler: str = ""
     make_cmd: str = "nmake" #the system's make command.  nmake on windows, make on Linux.
+    cmake_cmd: str = "cmake"
 
     '''
     CMAKE_LIBRARY_PATH (per the cmake documentation, V3.17.0):
@@ -141,45 +143,92 @@ class ProjectInformation:
             os.path.isfile(self.cpp_compiler) and os.path.isfile(self.c_compiler) and
             os.path.isdir(self.project_directory))
     
-    def cmake(self) -> str:
+    def cmake(self) -> list:
         '''
         Returns the cmake command for this configuration.
         '''
-        command = ["cmake"]
+        command = [self.cmake_cmd]
         if(len(self.generator_type) > 0):
             command.append("-G")
-            command.append("\"" + self._sanitize_argument(self.generator_type) + "\"")
+            command.append(self._sanitize_argument(self.generator_type))
         
         if(len(self.c_compiler) > 0):
-            command.append("-DCMAKE_C_COMPILER=\"" + self._sanitize_argument(os.path.abspath(self.c_compiler)) + "\"")
+            command.append("-DCMAKE_C_COMPILER=" + self._sanitize_argument(os.path.abspath(self.c_compiler)))
 
         if(len(self.cpp_compiler) > 0):
-            command.append("-DCMAKE_CXX_COMPILER:Path=\"" + self._sanitize_argument(os.path.abspath(self.cpp_compiler)) + "\"")
+            command.append("-DCMAKE_CXX_COMPILER=" + self._sanitize_argument(os.path.abspath(self.cpp_compiler)))
         
         if(len(self.cmake_include_path) > 0):
-            command.append("-DCMAKE_INCLUDE_PATH=\"" + self._sanitize_argument(';'.join(self.cmake_include_path)) + "\"")
+            command.append("-DCMAKE_INCLUDE_PATH=" + self._sanitize_argument(';'.join(self.cmake_include_path)))
         
         if(len(self.cmake_library_path) > 0):
-            command.append("-DCMAKE_LIBRARY_PATH=\"" + self._sanitize_argument(';'.join(self.cmake_library_path)) + "\"")
+            command.append("-DCMAKE_LIBRARY_PATH=" + self._sanitize_argument(';'.join(self.cmake_library_path)))
 
         if(len(self.source_directory) > 0):
-            command.append("\"" + self._sanitize_argument(os.path.abspath(self.source_directory)) + "\"")
+            command.append(self._sanitize_argument(os.path.abspath(self.source_directory)))
         
-        return ' '.join(command)
+        return command
     
-    def make(self) -> str:
+    def make(self) -> list:
         '''
         Returns the make command for this configuration.
         '''
         command = [self.make_cmd]
 
         if len(self.make_arguments) > 0:
-            command.append(self._sanitize_argument(' '.join(self.make_arguments)))
+            for arg in self.make_arguments:
+                command.append(self._sanitize_argument(arg))
         
         if len(self.build_targets) > 0:
-            command.append(self._sanitize_argument(' '.join(self.build_targets)))
+            for target in self.build_targets:
+                command.append(self._sanitize_argument(target))
         
-        return ' '.join(command)
+        return command
+
+    def execute(self, cleanbuild: bool=False) -> bool:
+        '''
+        Executes the build process on this project.  If cleanbuild is True,
+        then the build directory will be deleted and recreated.
+        '''
+        if not os.path.isdir(self.build_directory):
+            try:
+                os.makedirs(self.build_directory)
+            except OSError as e:
+                logger.error(ProjectInformation.execute.__qualname__ + ": what??")
+            if not os.path.isdir(self.build_directory):
+                logger.error("Could not create the build directory!!")
+                return False
+        return (self._run_command(self.cmake(), new_cwd=self.build_directory) and self._run_command(self.make(), new_cwd=self.build_directory))
+    
+    def _run_command(self, command: list=[], new_cwd: str="") -> bool:
+        if len(command) == 0:
+            return True
+        currentdir = os.getcwd()
+        if len(new_cwd) > 0:
+            if os.path.isdir(new_cwd):
+                os.chdir(new_cwd)
+                logger.debug("Changing into directory: \"" + new_cwd + "\"")
+            else:
+                logger.error(ProjectInformation._run_command.__qualname__ + 
+                    ": new_cwd specified but the directory does not exist!")
+                raise NotADirectoryError(ProjectInformation._run_command.__qualname__ + 
+                    ": new_cwd specified but the directory does not exist!")
+
+        success = False
+        try:
+            result = subprocess.run(command)
+            success = (result.returncode == 0)
+            if not success:
+                logger.error("process failed: " + repr(result))
+        except subprocess.CalledProcessError as e:
+            logger.error("Command: " + str(e.cmd) + "\n" + 
+                "OUTPUT: " + str(e.output) + "\n" + 
+                "RETURN CODE: " + str(e.returncode))
+        
+        if os.getcwd() != currentdir:
+            logger.debug("changing back into directory: \"" + currentdir + "\"")
+            os.chdir(currentdir)
+        return success
 
     def _sanitize_argument(self, argument) -> str:
         '''

@@ -5,6 +5,8 @@ from PyQt5.Qt import * # noqa: F403
 from UI.widgets import MainBuildMenu
 from UI.stdredirect import OutputWindow
 
+from globaldata import CONFIG
+
 logger = logging.getLogger(__name__)
 
 class MainWindow(QMainWindow):
@@ -22,6 +24,7 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event) -> None:
         logger.debug(MainWindow.closeEvent.__qualname__ + ": Triggered")
         self._close_outputwindow()
+        CONFIG.save()
     
     def _init_outputwindow(self) -> None:
         self.owind = OutputWindow(parent=None)

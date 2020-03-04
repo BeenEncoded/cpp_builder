@@ -14,7 +14,7 @@ def actual_project_information() -> ProjectInformation:
     testinfo.generator_type = CMAKE_GENERATOR_TYPES[14]
     testinfo.make_cmd = "nmake.exe"
     testinfo.cmake_cmd = "cmake.exe"
-    testinfo.build_targets = ["release", "debug"]
+    testinfo.build_targets = ["debug"]
     testinfo.cmake_include_path = ["C:\\Users\\beene.DESKTOP-NGBJDSG\\Documents\\coding\\C++\\Current_projects\\test_2019\\src\\main"]
     testinfo.cmake_library_path = ["C:\\Users\\lib",
                                     "C:\\LLVM\\lib\\clang\\9.0.0\\include"]

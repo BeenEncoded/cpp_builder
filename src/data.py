@@ -1,4 +1,5 @@
-import configparser, dataclasses, logging, os, typing, subprocess, shutil
+import configparser, dataclasses, logging, os, typing, subprocess, shutil, enum, sys
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -12,17 +13,17 @@ CMAKE_GENERATOR_TYPES: list = ["Visual Studio 16 2019",
     "Visual Studio 11 2012 x86",
     "Visual Studio 11 2012 x64",
     "Visual Studio 10 2010 x86",
-    "Visual Studio 10 2010 x64",
+    "Visual Studio 10 2010 x64", #10
     "Visual Studio 9 2008 x86",
     "Visual Studio 9 2008 x64",
     "Borland Makefiles",
-    "NMake Makefiles",
+    "NMake Makefiles", #14
     "NMake Makefiles JOM",
     "MSYS Makefiles",
     "MinGW Makefiles",
-    "Unix Makefiles",
+    "Unix Makefiles", #18
     "Green Hills MULTI",
-    "Ninja",
+    "Ninja", #20
     "Watcom WMake",
     "CodeBlocks - MinGW Makefiles",
     "CodeBlocks - NMake Makefiles",
@@ -32,7 +33,7 @@ CMAKE_GENERATOR_TYPES: list = ["Visual Studio 16 2019",
     "CodeLite - MinGW Makefiles",
     "CodeLite - NMake Makefiles",
     "CodeLite - Ninja",
-    "CodeLite - Unix Makefiles",
+    "CodeLite - Unix Makefiles",#30
     "Sublime Text 2 - MinGW Makefiles",
     "Sublime Text 2 - NMake Makefiles",
     "Sublime Text 2 - Ninja",
@@ -42,9 +43,51 @@ CMAKE_GENERATOR_TYPES: list = ["Visual Studio 16 2019",
     "Kate - Ninja",
     "Kate - Unix Makefiles",
     "Eclipse CDT4 - NMake Makefiles",
-    "Eclipse CDT4 - MinGW Makefiles",
+    "Eclipse CDT4 - MinGW Makefiles",#40
     "Eclipse CDT4 - Ninja",
     "Eclipse CDT4 - Unix Makefiles"]
+
+class OsType(enum.IntFlag):
+    '''
+    Operating system support bitmask.
+    '''
+    NO_SUPPORT = 0
+    WINDOWS = enum.auto()
+    LINUX = enum.auto()
+    OSX = enum.auto()
+
+def current_os() -> OsType:
+    '''
+    Returns the OsType corresponding to the platform currently being used.
+    '''
+    systems = { #expressions paired with each platform type
+        r"([Ww][Ii][Nn])": OsType.WINDOWS,
+        r"([Ll]inux)": OsType.LINUX,
+        r"([Dd]arwin)|(osx)|(OSX)": OsType.OSX
+    }
+    plat = sys.platform
+
+    for expression in systems:
+        if re.match(expression, plat):
+            return systems[expression]
+    return OsType.NO_SUPPORT
+
+class SupportedCmakeGenerators(enum.Enum):
+    '''
+    This enum is an enumeration of metadata associated with each makefile
+    generation type.  Unsupported (by this software) makefile types are not included.
+
+    Each value includes a bitmask indicating what operating systems are
+    supported by the value in question.  For instance, nmake is not
+    supported on linux, and make is not supported on windows.
+    '''
+    NMAKE_MAKEFILE = (CMAKE_GENERATOR_TYPES[14], "nmake", OsType.WINDOWS) #not supported on linux
+    UNIX_MAKEFILE = (CMAKE_GENERATOR_TYPES[18], "make", OsType.LINUX)   #not supported on windows
+
+    def __init__(self, generatorname: str="", makecommand: str="", operating_system: OsType=OsType.NO_SUPPORT):
+        self.generator_name = generatorname
+        self.make_command = makecommand
+        self.support = operating_system
 
 class Configuration:
     '''
@@ -107,12 +150,11 @@ class ProjectInformation:
     dist_directory: str = (os.getcwd() + os.path.sep + "dist")
 
     #cmake arguments and specifiers
-    generator_type: str = CMAKE_GENERATOR_TYPES[14] #default to NMake
+    generator_type: SupportedCmakeGenerators=SupportedCmakeGenerators.NMAKE_MAKEFILE
 
     #cmake system-dependent arguments that persist between different projects:
     cpp_compiler: str = ""
     c_compiler: str = ""
-    make_cmd: str = "nmake" #the system's make command.  nmake on windows, make on Linux.
     cmake_cmd: str = "cmake"
 
     '''
@@ -150,9 +192,10 @@ class ProjectInformation:
         can be passed to make, and through make to the compiler -- and every combination thereof -- to
         support validation of so early in development.
         '''
-        return ((self.generator_type in CMAKE_GENERATOR_TYPES) and 
-            os.path.isfile(self.cpp_compiler) and os.path.isfile(self.c_compiler) and
-            os.path.isdir(self.project_directory))
+        return (os.path.isfile(self.cpp_compiler) and os.path.isfile(self.c_compiler) and
+            os.path.isdir(self.project_directory) and os.path.isdir(self.source_directory) and 
+            os.path.isdir(self.build_directory) and os.path.isdir(self.dist_directory) and 
+            ((self.generator_type.support & current_os()) == current_os()))
     
     def applyconfig(self, config: Configuration=None) -> None:
         sconfig = config.config["SYSTEMCONFIG"]
@@ -168,9 +211,9 @@ class ProjectInformation:
         Returns the cmake command for this configuration.
         '''
         command = [self.cmake_cmd]
-        if(len(self.generator_type) > 0):
-            command.append("-G")
-            command.append(self._sanitize_argument(self.generator_type))
+
+        command.append("-G")
+        command.append(self._sanitize_argument(self.generator_type.generator_name))
         
         if(len(self.c_compiler) > 0):
             command.append("-DCMAKE_C_COMPILER=" + self._sanitize_argument(os.path.abspath(self.c_compiler)))
@@ -193,7 +236,7 @@ class ProjectInformation:
         '''
         Returns the make command for this configuration.
         '''
-        command = [self.make_cmd]
+        command = [self.generator_type.make_command]
 
         if len(self.make_arguments) > 0:
             for arg in self.make_arguments:
@@ -222,7 +265,7 @@ class ProjectInformation:
     
     def _run_command(self, command: list=[], new_cwd: str="") -> bool:
         if len(command) == 0:
-            return True
+            return True #the command is to do nothing, right?  We are successful!
         currentdir = os.getcwd()
         if len(new_cwd) > 0:
             if os.path.isdir(new_cwd):
@@ -240,7 +283,15 @@ class ProjectInformation:
             success = (result.returncode == 0)
             if not success:
                 logger.error("process failed: " + repr(result))
-        except subprocess.CalledProcessError as e:
+        except FileNotFoundError as e: #on windows, command not found
+            logger.error(repr(e) + os.linesep + "Command: " + ' '.join(command))
+            if ((current_os() & OsType.WINDOWS) == OsType.WINDOWS):
+                #if windows, usually you need to run the stoopehd vcvars cmd thing, and launch the build proc
+                #off of that.  if linux, then a hole in space and time is probably distracting you from this...
+                logger.info(os.linesep + os.linesep + "You likely need to run vcvars64 or vcvars32 to set the environment " + 
+                    "variables that this process must inherit for the appropriate commands to be " + 
+                    "successfully called." + os.linesep)
+        except subprocess.CalledProcessError as e: #execution return value != 0
             logger.error("Command: " + str(e.cmd) + "\n" + 
                 "OUTPUT: " + str(e.output) + "\n" + 
                 "RETURN CODE: " + str(e.returncode))

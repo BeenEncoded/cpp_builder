@@ -57,12 +57,13 @@ class Configuration:
 
         # set up the configuration, initializing it with some sane defaults
         self.config = self._default_config()
+        self.filename = "cppbuilder.conf"
 
         # here we make sure that we search for a config file, and
         # if none is loaded we write it.
-        if len(self.config.read(["backup.conf"])) == 0:
+        if len(self.config.read([self.filename])) == 0:
             logger.warning("Configuration file not found, saving to " +
-                           (os.path.abspath(".") + os.path.sep + "backup.conf"))
+                           (os.path.abspath(".") + os.path.sep + self.filename))
             self.save()
 
     # This function returns a default configuration.
@@ -76,11 +77,21 @@ class Configuration:
         c['DEFAULT'] = {
         }
 
+        c['SYSTEMCONFIG'] = {
+            "cppcompiler": "g++",
+            "ccompiler": "gcc",
+            "makecmd": "make",
+            "cmakecmd": "cmake",
+            "generator": CMAKE_GENERATOR_TYPES[18],
+            "libfolders": [],
+            "includefolders": []
+        }
+
         return c
 
-    def save(self):
+    def save(self) -> None:
         logger.info("Saving configuration")
-        with open("backup.conf", 'w') as config_file:
+        with open(self.filename, 'w') as config_file:
             self.config.write(config_file)
 
 @dataclasses.dataclass
@@ -143,6 +154,15 @@ class ProjectInformation:
             os.path.isfile(self.cpp_compiler) and os.path.isfile(self.c_compiler) and
             os.path.isdir(self.project_directory))
     
+    def applyconfig(self, config: Configuration=None) -> None:
+        sconfig = config.config["SYSTEMCONFIG"]
+        self.cpp_compiler = sconfig["cppcompiler"]
+        self.c_compiler = sconfig["ccompiler"]
+        self.make_cmd = sconfig["makecmd"]
+        self.cmake_cmd = sconfig["cmakecmd"]
+        self.cmake_library_path = sconfig["libfolders"]
+        self.cmake_include_path = sconfig["includefolders"]
+
     def cmake(self) -> list:
         '''
         Returns the cmake command for this configuration.

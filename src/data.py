@@ -194,7 +194,6 @@ class ProjectInformation:
         '''
         return (os.path.isfile(self.cpp_compiler) and os.path.isfile(self.c_compiler) and
             os.path.isdir(self.project_directory) and os.path.isdir(self.source_directory) and 
-            os.path.isdir(self.build_directory) and os.path.isdir(self.dist_directory) and 
             ((self.generator_type.support & current_os()) == current_os()))
     
     def applyconfig(self, config: Configuration=None) -> None:
@@ -253,6 +252,9 @@ class ProjectInformation:
         Executes the build process on this project.  If cleanbuild is True,
         then the build directory will be deleted and recreated.
         '''
+        if not self.isvalid():
+            logger.warning("Attempted to execute invald project.  " + repr(self))
+            return False
         if not os.path.isdir(self.build_directory):
             try:
                 os.makedirs(self.build_directory)

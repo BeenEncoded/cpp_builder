@@ -6,6 +6,14 @@ from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot
 logger = logging.getLogger(__name__)
 
 class OutputWindow(QWidget):
+    '''
+    A window that can be used instead of the widget.
+
+    For imbedding a widget that redirects stdio into another window
+    (for instance, adding stdio redirect to a QMainWindow, or
+    adding it to a widget or window you've already created)
+    see STDOutWidget.
+    '''
     def __init__(self, parent=None):
         super(OutputWindow, self).__init__(None)
         self._init_layout()
@@ -34,7 +42,9 @@ class STDOutWidget(QWidget):
     '''
     Basically a QPlainTextEdit but it shows the stdout.
 
-    When the last one is deleted the stdout and stderr streams are reset to the
+    Operates like std::shared_ptr<T>; using a static instance of a member variable
+    it tracks its instances.
+    When the last instance is deleted the stdout and stderr streams are reset to the
     original objects.
     '''
     _instance_count = 0
@@ -74,8 +84,14 @@ class STDOutWidget(QWidget):
 
 class UIStream(QObject):
     '''
-    Can be used to redirect stdout and stderr from the console to 
-    a UI element.
+    A singleton that serves to redirect stdio to a UI element.
+
+    WARNING: This object takes advantage of the Qt5 library's UI event handling.
+        Because of this, all messages are sent as print events to
+        the event handler thread (along with ALL OTHER UI EVENTS), so
+        if you tear your arm off with a tree pruner because you don't
+        know what you're doing: you know who to blame.
+        Also you deserve it.
     '''
     _streamsdifferent = False
     _stdout = None

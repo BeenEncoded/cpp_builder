@@ -94,19 +94,19 @@ class Configuration:
     This helps to centralize all code relating to saving, storing, getting, and 
     initializing global program configuration.
     '''
+    filename: str = "cppbuilder.conf"
 
     def __init__(self):
         logger.debug("Configuration instantiated.")
 
         # set up the configuration, initializing it with some sane defaults
         self.config = self._default_config()
-        self.filename = "cppbuilder.conf"
 
         # here we make sure that we search for a config file, and
         # if none is loaded we write it.
-        if len(self.config.read([self.filename])) == 0:
+        if len(self.config.read([Configuration.filename])) == 0:
             logger.warning("Configuration file not found, saving to " +
-                           (os.path.abspath(".") + os.path.sep + self.filename))
+                           (os.path.abspath(".") + os.path.sep + Configuration.filename))
             self.save()
 
     # This function returns a default configuration.
@@ -134,7 +134,7 @@ class Configuration:
 
     def save(self) -> None:
         logger.info("Saving configuration")
-        with open(self.filename, 'w') as config_file:
+        with open(Configuration.filename, 'w') as config_file:
             self.config.write(config_file)
 
 @dataclasses.dataclass
@@ -256,7 +256,7 @@ class ProjectInformation:
         if not os.path.isdir(self.build_directory):
             try:
                 os.makedirs(self.build_directory)
-            except OSError as e:
+            except OSError:
                 logger.error(ProjectInformation.execute.__qualname__ + ": what??")
             if not os.path.isdir(self.build_directory):
                 logger.error("Could not create the build directory!!")

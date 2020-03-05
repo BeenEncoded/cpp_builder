@@ -1,6 +1,6 @@
 import unittest, logging, sys
 
-from data import ProjectInformation, CMAKE_GENERATOR_TYPES, OsType, SupportedCmakeGenerators
+from data import OsType, SupportedCmakeGenerators
 import data
 from unit_tests import testdata
 

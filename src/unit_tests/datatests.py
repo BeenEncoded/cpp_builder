@@ -1,6 +1,6 @@
 import unittest, logging, sys
 
-from data import OsType, SupportedCmakeGenerators
+from data import OsType, SupportedCmakeGenerators, ProjectCommands
 import data
 from unit_tests import testdata
 
@@ -22,7 +22,7 @@ class ProjectInformationTestCase(unittest.TestCase):
     def test_command_execution(self) -> None:
         try:
             info = testdata.actual_project_information()
-            self.assertEqual(info.execute(), True)
+            self.assertEqual(info.execute(commands=(ProjectCommands.CMAKE | ProjectCommands.MAKE)), True)
         except Exception as e:
             logger.error(repr(e))
             self.assertTrue(False)

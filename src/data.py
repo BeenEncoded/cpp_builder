@@ -266,6 +266,8 @@ class ProjectInformation:
         if not self.isvalid():
             logger.warning("Attempted to execute invald project.  " + repr(self))
             return False
+        
+        #make the build directory if it does not yet exist.
         if not os.path.isdir(self.build_directory):
             try:
                 os.makedirs(self.build_directory)

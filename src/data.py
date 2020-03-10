@@ -56,6 +56,16 @@ class OsType(enum.IntFlag):
     LINUX = enum.auto()
     OSX = enum.auto()
 
+class ProjectCommands(enum.IntFlag):
+    '''
+    Project command bitmask.  This is used in the execution process to
+    determine which commands to execute.
+    '''
+    NO_COMMAND = 0
+    MAKE = enum.auto()
+    CMAKE = enum.auto()
+    CLEAN = enum.auto()
+
 def current_os() -> OsType:
     '''
     Returns the OsType corresponding to the platform currently being used.
@@ -247,7 +257,8 @@ class ProjectInformation:
         
         return command
 
-    def execute(self, cleanbuild: bool=False) -> bool:
+    def execute(self, 
+        commands: ProjectCommands=(ProjectCommands.CMAKE | ProjectCommands.MAKE)) -> bool:
         '''
         Executes the build process on this project.  If cleanbuild is True,
         then the build directory will be deleted and recreated.
@@ -263,7 +274,19 @@ class ProjectInformation:
             if not os.path.isdir(self.build_directory):
                 logger.error("Could not create the build directory!!")
                 return False
-        return (self._run_command(self.cmake(), new_cwd=self.build_directory) and self._run_command(self.make(), new_cwd=self.build_directory))
+
+        #I will make no attempt to explain this.
+        #It was non-trivial to write.  Have fun reading.
+        success = False
+        doclean = ((commands & ProjectCommands.CLEAN) == ProjectCommands.CLEAN)
+        docmake = ((commands & ProjectCommands.CMAKE) == ProjectCommands.CMAKE)
+        if doclean:
+            success = True # TODO: implement
+        if docmake and (success == doclean):
+            success = self._run_command(self.cmake(), new_cwd=self.build_directory)
+        if((commands & ProjectCommands.MAKE) == ProjectCommands.MAKE) and (success == docmake):
+            success = self._run_command(self.make(), new_cwd=self.build_directory)
+        return success
     
     def _run_command(self, command: list=[], new_cwd: str="") -> bool:
         if len(command) == 0:

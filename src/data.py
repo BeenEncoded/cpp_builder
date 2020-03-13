@@ -1,5 +1,5 @@
 import configparser, dataclasses, logging, os, typing, subprocess, shutil, enum, sys
-import re
+import re, json
 
 logger = logging.getLogger(__name__)
 
@@ -191,6 +191,48 @@ class ProjectInformation:
     build_targets: typing.List[str] = dataclasses.field(default_factory=list)
     make_arguments: typing.List[str] = dataclasses.field(default_factory=list)
 
+    def tojson(self) -> str:
+        '''
+        Returns this object as a json string.
+        '''
+        thisobject = {
+            "projectdir": self.project_directory,
+            "sourcedir": self.source_directory,
+            "builddir": self.build_directory,
+            "distdir": self.dist_directory,
+            "cmakegenerator": self.generator_type.name,
+            "cppcompiler": self.cpp_compiler,
+            "ccompiler": self.c_compiler,
+            "cmakecmd": self.cmake_cmd,
+            "cmakelibpaths": self.cmake_library_path,
+            "cmakeincludepaths": self.cmake_include_path,
+            "buildtargets": self.build_targets,
+            "makeargs": self.make_arguments
+        }
+        return json.dumps(thisobject, sort_keys=True, indent=4)
+
+    def fromjson(self, data: str="") -> None:
+        '''
+        Takes a string representing json stuff and loads it into this 
+        object.
+        '''
+        loadeddata = json.loads(data)
+        self.project_directory = loadeddata["projectdir"]
+        self.source_directory = loadeddata["sourcedir"]
+        self.build_directory = loadeddata["builddir"]
+        self.dist_directory = loadeddata["distdir"]
+        for g in SupportedCmakeGenerators:
+            if g.name == loadeddata["cmakegenerator"]:
+                self.generator_type = g
+                break
+        self.cpp_compiler = loadeddata["cppcompiler"]
+        self.c_compiler = loadeddata["ccompiler"]
+        self.cmake_cmd = loadeddata["cmakecmd"]
+        self.cmake_library_path = loadeddata["cmakelibpaths"]
+        self.cmake_include_path = loadeddata["cmakeincludepaths"]
+        self.build_targets = loadeddata["buildtargets"]
+        self.make_arguments = loadeddata["makeargs"]
+
     def isvalid(self) -> bool:
         '''
         Returns true if the data is valid to be passed to cmake.  This means that the 
@@ -207,6 +249,11 @@ class ProjectInformation:
             ((self.generator_type.support & current_os()) == current_os()))
     
     def applyconfig(self, config: Configuration=None) -> None:
+        '''
+        Applies configuration to this object.  This can be used to store some settings
+        that are system-wide in configuration instead of as a project-depenedent file and
+        then apply them as 'defaults'.
+        '''
         sconfig = config.config["SYSTEMCONFIG"]
         self.cpp_compiler = sconfig["cppcompiler"]
         self.c_compiler = sconfig["ccompiler"]

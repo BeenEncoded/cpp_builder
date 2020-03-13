@@ -1,6 +1,6 @@
 import unittest, logging, sys
 
-from data import OsType, SupportedCmakeGenerators, ProjectCommands
+from data import OsType, SupportedCmakeGenerators, ProjectCommands, ProjectInformation
 import data
 from unit_tests import testdata
 
@@ -18,11 +18,15 @@ class ProjectInformationTestCase(unittest.TestCase):
         logger.debug(info.cmake())
         logger.debug(info.make())
     
-    # @unittest.skip("Skipping test_command_execution")
+    @unittest.skip("Skipping test_command_execution")
     def test_command_execution(self) -> None:
         try:
             info = testdata.actual_project_information()
+            self.assertEqual(info.execute(commands=(ProjectCommands.CLEAN | ProjectCommands.CMAKE | ProjectCommands.MAKE)), True)
             self.assertEqual(info.execute(commands=(ProjectCommands.CMAKE | ProjectCommands.MAKE)), True)
+            self.assertEqual(info.execute(commands=(ProjectCommands.CMAKE)), True)
+            self.assertEqual(info.execute(commands=(ProjectCommands.MAKE)), True)
+            self.assertEqual(info.execute(commands=(ProjectCommands.CLEAN)), True)
         except Exception as e:
             logger.error(repr(e))
             self.assertTrue(False)
@@ -39,3 +43,12 @@ class ProjectInformationTestCase(unittest.TestCase):
             logger.error(repr(e))
             self.assertTrue(False)
 
+    def test_projectinformation_serialization(self) -> None:
+        testinformation = testdata.actual_project_information()
+        data = testinformation.tojson()
+        print(data)
+
+        newinfo = ProjectInformation()
+        newinfo.fromjson(data)
+
+        self.assertEqual(testinformation, newinfo)

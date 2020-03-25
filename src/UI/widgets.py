@@ -1,8 +1,7 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel
+from PyQt5.QtCore import pyqtSlot, Qt
 
 import logging
-from pathlib import Path
 
 from UI.stdredirect import STDOutWidget
 
@@ -17,7 +16,11 @@ class ProjectSelectionMenu(QWidget):
     def _layout(self):
         mainlayout = QVBoxLayout()
 
+        l = QLabel("Hello World!")
+        l.setAlignment(Qt.AlignCenter)
 
+        mainlayout.addWidget(l)
+        self.setLayout(mainlayout)
 
     def _handlers(self):
         pass

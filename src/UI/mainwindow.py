@@ -2,7 +2,7 @@ import logging
 
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.Qt import * # noqa: F403
-from UI.widgets import MainBuildMenu
+from UI.widgets import ProjectSelectionMenu
 from UI.stdredirect import OutputWindow
 
 from globaldata import CONFIG
@@ -18,7 +18,7 @@ class MainWindow(QMainWindow):
 
         #an aditional output window can be enabled by simply uncommenting the following line:
         #self._init_outputwindow()
-        self.setCentralWidget(MainBuildMenu(self))
+        self.setCentralWidget(ProjectSelectionMenu(self))
         self.show()
     
     def closeEvent(self, event) -> None:

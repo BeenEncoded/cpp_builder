@@ -1,6 +1,8 @@
 import configparser, dataclasses, logging, os, typing, subprocess, shutil, enum, sys
 import re, json
 
+from pathlib import Path
+
 logger = logging.getLogger(__name__)
 
 CMAKE_GENERATOR_TYPES: list = ["Visual Studio 16 2019",
@@ -104,7 +106,9 @@ class Configuration:
     This helps to centralize all code relating to saving, storing, getting, and 
     initializing global program configuration.
     '''
-    filename: str = "cppbuilder.conf"
+    home_directory: str = str(Path.home())
+    program_home: str = (home_directory + os.sep + ".cppbuilder")
+    filename: str = (program_home + os.sep + "cppbuilder.conf")
 
     def __init__(self):
         logger.debug("Configuration instantiated.")
@@ -145,6 +149,9 @@ class Configuration:
 
     def save(self) -> None:
         logger.info("Saving configuration")
+        Path(Configuration.program_home).mkdir(parents=True, exist_ok=True)
+        if not os.path.isdir(Configuration.program_home):
+            raise NotADirectoryError(f"\"{Configuration.program_home}\" does not exist!")
         with open(Configuration.filename, 'w') as config_file:
             self.config.write(config_file)
 

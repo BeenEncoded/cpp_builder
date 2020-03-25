@@ -2,10 +2,27 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout
 from PyQt5.QtCore import pyqtSlot
 
 import logging
+from pathlib import Path
 
 from UI.stdredirect import STDOutWidget
 
 logger = logging.getLogger(__name__)
+
+class ProjectSelectionMenu(QWidget):
+    def __init__(self, parent):
+        super(ProjectSelectionMenu, self).__init__(parent)
+        self._layout()
+        self._handlers()
+    
+    def _layout(self):
+        mainlayout = QVBoxLayout()
+
+
+
+    def _handlers(self):
+        pass
+
+
 
 class MainBuildMenu(QWidget):
     def __init__(self, parent):

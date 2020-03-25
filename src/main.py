@@ -19,7 +19,9 @@ def setup_logging():
     root.addHandler(sh)
     # root.addHandler(fh)
     root.setLevel(logging.DEBUG)
-logger = None
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 from PyQt5.QtWidgets import QApplication
 
@@ -28,9 +30,6 @@ from UI.mainwindow import MainWindow
 def showiu():
     app = QApplication(sys.argv)
     mainwindow = MainWindow() # noqa: F841
-    setup_logging()
-    global logger
-    logger = logging.getLogger(__name__)
     logger.info("Program starting")
     return app.exec()
 

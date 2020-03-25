@@ -128,6 +128,7 @@ class Configuration:
 
         #set default key-value pairs here
         c['DEFAULT'] = {
+            'projects': []
         }
 
         c['SYSTEMCONFIG'] = {
@@ -146,6 +147,19 @@ class Configuration:
         logger.info("Saving configuration")
         with open(Configuration.filename, 'w') as config_file:
             self.config.write(config_file)
+
+    def __repr__(self):
+        some_stuff = []
+        for key in self.config:
+            some_stuff.append(f"SECTION[{key}]")
+            some_stuff += [f"{x}: {self.config[key][x]}" for x in self.config[key]]
+        return os.linesep.join(some_stuff)
+
+    def __getitem__(self, key):
+        return self.config[key]
+
+    def __setitem__(self, key, value):
+        self.config[key] = value
 
 @dataclasses.dataclass
 class ProjectInformation:

@@ -43,7 +43,7 @@ class STDOutWidget(QWidget):
     Basically a QPlainTextEdit but it shows the stdout.
 
     Operates like std::shared_ptr<T>; using a static instance of a member variable
-    it tracks its instances.
+    it tracks its instances in order to self-manage.
     When the last instance is deleted the stdout and stderr streams are reset to the
     original objects.
     '''

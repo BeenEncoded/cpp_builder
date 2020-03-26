@@ -8,7 +8,7 @@ logger = logging.getLogger("TEST: " + __name__)
 
 class ProjectInformationTestCase(unittest.TestCase):
 
-    @unittest.skip("Skipping test_command_generation")
+    # @unittest.skip("Skipping test_command_generation")
     def test_command_generation(self) -> None:
         info = testdata.actual_project_information()
         logger.debug("Testinfo: ")

@@ -14,7 +14,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(parent)
         self.setWindowTitle("C++ Build Assistant")
 
-        logger.info("setting central widget")
+        logger.debug("setting central widget")
 
         #an aditional output window can be enabled by simply uncommenting the following line:
         #self._init_outputwindow()

@@ -176,12 +176,12 @@ class ProjectInformation:
     '''
     #project-specific settings:
     project_directory: str = os.getcwd()
-    source_directory: str = (os.getcwd() + os.path.sep + "src")
-    build_directory: str = (os.getcwd() + os.path.sep + "build")
-    dist_directory: str = (os.getcwd() + os.path.sep + "dist")
+    source_directory: str = "src"
+    build_directory: str = "build"
+    dist_directory: str = "dist"
 
     #cmake arguments and specifiers
-    generator_type: SupportedCmakeGenerators=SupportedCmakeGenerators.NMAKE_MAKEFILE
+    generator_type: SupportedCmakeGenerators = SupportedCmakeGenerators.NMAKE_MAKEFILE
 
     #cmake system-dependent arguments that persist between different projects:
     cpp_compiler: str = ""
@@ -305,7 +305,7 @@ class ProjectInformation:
             command.append("-DCMAKE_LIBRARY_PATH=" + self._sanitize_argument(';'.join(self.cmake_library_path)))
 
         if(len(self.source_directory) > 0):
-            command.append(self._sanitize_argument(os.path.abspath(self.source_directory)))
+            command.append(self._sanitize_argument(os.path.join(self.project_directory, self.source_directory)))
         
         return command
     
@@ -320,8 +320,7 @@ class ProjectInformation:
                 command.append(self._sanitize_argument(arg))
         
         if len(self.build_targets) > 0:
-            for target in self.build_targets:
-                command.append(self._sanitize_argument(target))
+            command += [self._sanitize_argument(target) for target in self.build_targets]
         
         return command
 

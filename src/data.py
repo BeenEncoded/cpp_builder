@@ -132,7 +132,6 @@ class Configuration:
 
         #set default key-value pairs here
         c['DEFAULT'] = {
-            'projects': []
         }
 
         c['SYSTEMCONFIG'] = {

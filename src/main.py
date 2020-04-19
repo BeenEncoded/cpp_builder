@@ -1,24 +1,29 @@
 import logging, sys
 
+from globaldata import LOG_LEVEL, LOGFILE, CONFIG
+from logging.handlers import RotatingFileHandler
+
 def setup_logging():
     root = logging.getLogger()
     f = logging.Formatter("%(asctime)s [%(name)s] [%(levelname)s] -> %(message)s")
     sh = logging.StreamHandler(sys.stdout)
-    # fh = logging.FileHandler(LOGFILE)
-    # fh = RotatingFileHandler(
-    #     LOGFILE,
-    #     mode='a',
-    #     maxBytes=((2**20) * 2.5),
-    #     backupCount=2,
-    #     encoding=None,
-    #     delay=False)
-
     sh.setFormatter(f)
-    # fh.setFormatter(f)
-
     root.addHandler(sh)
-    # root.addHandler(fh)
-    root.setLevel(logging.DEBUG)
+
+    if CONFIG['DEFAULT']['logfile'] == "on":
+        fh = logging.FileHandler(LOGFILE)
+        fh = RotatingFileHandler(
+            LOGFILE,
+            mode='a',
+            maxBytes=((2**20) * 2.5),
+            backupCount=2,
+            encoding=None,
+            delay=False)
+        
+        fh.setFormatter(f)
+        root.addHandler(fh)
+
+    root.setLevel(LOG_LEVEL)
 
 setup_logging()
 logger = logging.getLogger(__name__)

@@ -132,6 +132,8 @@ class Configuration:
 
         #set default key-value pairs here
         c['DEFAULT'] = {
+            'loglevel': 'debug',
+            'logfile': 'on'
         }
 
         c['SYSTEMCONFIG'] = {

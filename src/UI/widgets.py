@@ -1,11 +1,12 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton
 from PyQt5.QtWidgets import QFileDialog
-from PyQt5.QtCore import pyqtSlot, Qt
+from PyQt5.QtCore import pyqtSlot, Qt, pyqtSignal
 
 import logging, os
 
 from UI.stdredirect import STDOutWidget
 from data import Configuration
+from globaldata import CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -28,9 +29,7 @@ class HandyBaseWidget(QWidget):
             l.addWidget(w)
         return l
 
-    
-
-class ProjectSelectionMenu(QWidget):
+class ProjectSelectionMenu(HandyBaseWidget):
     def __init__(self, parent):
         super(ProjectSelectionMenu, self).__init__(parent)
         self._layout()
@@ -42,11 +41,8 @@ class ProjectSelectionMenu(QWidget):
         self.pathTextBox = QLineEdit()
         self.pathTextBox.setPlaceholderText("The Path to your Project")
         self.submitbutton = QPushButton("Select Folder")
-        blahlayout = QHBoxLayout()
-        blahlayout.addWidget(self.pathTextBox)
-        blahlayout.addWidget(self.submitbutton)
 
-        mainlayout.addLayout(blahlayout)
+        mainlayout.addLayout(self.hLayout([self.pathTextBox, self.submitbutton]))
         self.setLayout(mainlayout)
 
     def _handlers(self):
@@ -92,15 +88,15 @@ class BuildConfigurationMenu(HandyBaseWidget):
         pass
 
 class EditPathWidget(HandyBaseWidget):
-    def __init__(self, parent, callback, placeholder: str=""):
+    pathEdited = pyqtSignal(str)
+
+    def __init__(self, parent, dialogcaption: str=r"Open folder", placeholder: str=""):
         '''
-        Creates a EditPathWidget.  When a callback is passed, when the 
-        path is modified tyhe callback is called with the path (as a string) as the only argument.
-        This can be used to write back the new path to the original object.
+        Creates a EditPathWidget.
         '''
         super(EditPathWidget, self).__init__(parent)
         self.placeholder = placeholder
-        self.callback = callback
+        self.dialogcaption = dialogcaption
         self._layout()
         self._handlers()
     
@@ -115,10 +111,30 @@ class EditPathWidget(HandyBaseWidget):
 
     def _handlers(self)->None:
         self.pathTextBox.textEdited.connect(self._onEdit)
+        self.selectFolderButton.clicked.connect(self._onFolderButtonClick)
     
     @pyqtSlot(str)
     def _onEdit(self, newtext: str="") -> None:
-        self.callback(newtext)
+        '''
+        Qt slot for the QLineEdit textEdited event.
+        '''
+        self._edited(newtext)
+    
+    @pyqtSlot()
+    def _onFolderButtonClick(self) -> None:
+        s = QFileDialog.getExistingDirectory(parent=Configuration.home_directory, caption=self.dialogcaption)
+        logger.debug(f"Selected folder = \"{s}\"")
+        if os.path.isdir(s):
+            self.pathTextBox.setText(s)
+            self._edited(s)
+
+    def _edited(self, newpath: str = "") -> None:
+        '''
+        proxy function for the signal emmission.
+        Should happen whenever the path has been edited by the user.  This means the 
+        QlineEdit was modified or the user selected a folder from the dialog.
+        '''
+        self.onEdited.emit(newpath)
 
 class MainBuildMenu(QWidget):
     def __init__(self, parent):

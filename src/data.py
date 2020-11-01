@@ -1,5 +1,16 @@
-import configparser, dataclasses, logging, os, typing, subprocess, shutil, enum, sys
-import re, json
+""" The data structures for the project.
+"""
+from __future__ import annotations
+import configparser
+import dataclasses
+import logging
+import os
+import typing
+import subprocess
+import enum
+import sys
+import re
+import json
 
 from pathlib import Path
 

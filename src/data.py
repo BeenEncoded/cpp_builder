@@ -117,9 +117,9 @@ class Configuration:
     This helps to centralize all code relating to saving, storing, getting, and 
     initializing global program configuration.
     '''
-    home_directory: str = str(Path.home())
-    program_home: str = (home_directory + os.sep + ".cppbuilder")
-    filename: str = (program_home + os.sep + "cppbuilder.conf")
+    HOME_DIRECTORY: str = str(Path.home())
+    PROGRAM_HOME: str = (HOME_DIRECTORY + os.sep + ".cppbuilder")
+    FILENAME: str = (PROGRAM_HOME + os.sep + "cppbuilder.conf")
 
     def __init__(self):
         logger.debug("Configuration instantiated.")
@@ -129,9 +129,9 @@ class Configuration:
 
         # here we make sure that we search for a config file, and
         # if none is loaded we write it.
-        if len(self.config.read([Configuration.filename])) == 0:
-            logger.warning("Configuration file not found, saving to " +
-                           (os.path.abspath(".") + os.path.sep + Configuration.filename))
+        if len(self.config.read([Configuration.FILENAME])) == 0:
+            logger.warning("Configuration file not found, saving to \"%s\"",
+                           (os.path.abspath(".") + os.path.sep + Configuration.FILENAME))
             self.save()
 
     # This function returns a default configuration.
@@ -150,9 +150,8 @@ class Configuration:
         c['SYSTEMCONFIG'] = {
             "cppcompiler": "g++",
             "ccompiler": "gcc",
-            "makecmd": "make",
             "cmakecmd": "cmake",
-            "generator": CMAKE_GENERATOR_TYPES[18],
+            "generator": str(SupportedCmakeGenerators.NMAKE_MAKEFILE),
             "libfolders": [],
             "includefolders": []
         }
@@ -161,10 +160,10 @@ class Configuration:
 
     def save(self) -> None:
         logger.info("Saving configuration")
-        Path(Configuration.program_home).mkdir(parents=True, exist_ok=True)
-        if not os.path.isdir(Configuration.program_home):
-            raise NotADirectoryError(f"\"{Configuration.program_home}\" does not exist!")
-        with open(Configuration.filename, 'w') as config_file:
+        Path(Configuration.PROGRAM_HOME).mkdir(parents=True, exist_ok=True)
+        if not os.path.isdir(Configuration.PROGRAM_HOME):
+            raise NotADirectoryError(f"\"{Configuration.PROGRAM_HOME}\" does not exist!")
+        with open(Configuration.FILENAME, 'w') as config_file:
             self.config.write(config_file)
 
     def __repr__(self):

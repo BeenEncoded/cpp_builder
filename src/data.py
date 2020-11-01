@@ -338,22 +338,22 @@ class ProjectInformation: # pylint: disable=too-many-instance-attributes
         
         return command
 
-    def execute(self, 
+    def execute(self,
         commands: ProjectCommands=(ProjectCommands.CMAKE | ProjectCommands.MAKE)) -> bool:
         '''
         Executes the build process on this project.  If cleanbuild is True,
         then the build directory will be deleted and recreated.
         '''
         if not self.isvalid():
-            logger.warning("Attempted to execute invald project.  " + repr(self))
+            logger.warning("Attempted to execute invald project.  %s", repr(self))
             return False
-        
+
         #make the build directory if it does not yet exist.
         if not os.path.isdir(self.build_directory):
             try:
                 os.makedirs(self.build_directory)
             except OSError:
-                logger.error(ProjectInformation.execute.__qualname__ + ": what??")
+                logger.error("%s: what??", ProjectInformation.execute.__qualname__)
             if not os.path.isdir(self.build_directory):
                 logger.error("Could not create the build directory!!")
                 return False

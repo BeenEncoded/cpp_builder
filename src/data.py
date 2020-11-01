@@ -180,7 +180,7 @@ class Configuration:
         self.config[key] = value
 
 @dataclasses.dataclass
-class ProjectInformation:
+class ProjectInformation: # pylint: disable=too-many-instance-attributes
     '''
     All data a CMake project needs.  Essentially these variables
     will be passed as arguments if set.

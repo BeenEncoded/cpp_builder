@@ -211,14 +211,14 @@ class ProjectInformation: # pylint: disable=too-many-instance-attributes
 
     '''
     CMAKE_INCLUDE_PATH (per the cmake documentation V3.17.0):
-    Semicolon-separated list of directories specifying a search path 
+    Semicolon-separated list of directories specifying a search path
     for the find_file() and find_path() commands. By default it is empty,
-    it is intended to be set by the project. See also CMAKE_SYSTEM_INCLUDE_PATH and CMAKE_PREFIX_PATH.
-    Passed on the command line via -D
+    it is intended to be set by the project. See also CMAKE_SYSTEM_INCLUDE_PATH
+    and CMAKE_PREFIX_PATH.  Passed on the command line via -D
     Only set this if you need to.
     '''
     cmake_include_path: typing.List[str] = dataclasses.field(default_factory=list)
-    
+
     # nmake arguments and target specifiers
     build_targets: typing.List[str] = dataclasses.field(default_factory=list)
     make_arguments: typing.List[str] = dataclasses.field(default_factory=list)
@@ -279,7 +279,7 @@ class ProjectInformation: # pylint: disable=too-many-instance-attributes
         return (os.path.isfile(self.cpp_compiler) and os.path.isfile(self.c_compiler) and
             os.path.isdir(self.project_directory) and os.path.isdir(self.source_directory) and 
             ((self.generator_type.support & current_os()) == current_os()))
-    
+
     def applyconfig(self, config: Configuration=None) -> None:
         '''
         Applies configuration to this object.  This can be used to store some settings
@@ -322,7 +322,7 @@ class ProjectInformation: # pylint: disable=too-many-instance-attributes
             command.append(self._sanitize_argument(os.path.join(self.project_directory, self.source_directory)))
         
         return command
-    
+
     def make(self) -> list:
         '''
         Returns the make command for this configuration.
@@ -370,7 +370,7 @@ class ProjectInformation: # pylint: disable=too-many-instance-attributes
         if((commands & ProjectCommands.MAKE) == ProjectCommands.MAKE) and (success == docmake):
             success = self._run_command(self.make(), new_cwd=self.build_directory)
         return success
-    
+
     def _run_command(self, command: list=[], new_cwd: str="") -> bool:
         if len(command) == 0:
             return True #the command is to do nothing, right?  We are successful!

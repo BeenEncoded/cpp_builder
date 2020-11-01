@@ -289,10 +289,13 @@ class ProjectInformation: # pylint: disable=too-many-instance-attributes
         sconfig = config.config["SYSTEMCONFIG"]
         self.cpp_compiler = sconfig["cppcompiler"]
         self.c_compiler = sconfig["ccompiler"]
-        self.make_cmd = sconfig["makecmd"]
         self.cmake_cmd = sconfig["cmakecmd"]
         self.cmake_library_path = sconfig["libfolders"]
         self.cmake_include_path = sconfig["includefolders"]
+        for gen in SupportedCmakeGenerators:
+            if str(gen) == sconfig["generator"]:
+                self.generator_type = gen
+                break
 
     def cmake(self) -> list:
         '''
